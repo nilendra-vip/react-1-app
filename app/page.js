@@ -1,95 +1,75 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import axios from "axios";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import ReactPaginate from 'react-paginate';
+
 
 export default function Home() {
+  const totalPage = 100 ;
+  const [page, setPage] = useState(1)
+  const [images, setImages] = useState([]);
+
+  const GetImages = async () => {
+    try {
+      const { data } = await axios.get(
+        `https://picsum.photos/v2/list?page=${page}&limit=10`
+      );
+      console.log(data);
+      setImages(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  const handlePageClick = (e)=>{
+    setPage(e.selected + 1)
+  }
+
+  useEffect(() => {
+    GetImages();
+    console.log(page)
+  }, [page]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    <div className="container pt-3 text-center">
+      <h1>Images Collection</h1>
+      <br />
+      <ul className="d-flex flex-wrap gap-3 bg-secondary-subtle  imagesContainer pt-5 ps-5">
+        {images
+          ? images.map((image, id) => {
+              return (
+                <li key={image.id}>
+                  <img src={image.download_url} height={150} width={220} alt="sss" />
+                  <br />
+                  <Link href={`/details/${image.id}`}>{image.author}</Link>
+                </li>
+              );
+            })
+          : "loading..."}
+      </ul>
+      <br />
+      <ReactPaginate
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3}
+        marginPagesDisplayed={1}
+        pageCount={totalPage}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName={page > 1 ? "page-item" : "d-none"}
+        previousLinkClassName="page-link"
+        nextClassName={page < totalPage ? "page-item" : "d-none"}
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination justify-content-center"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
+    </div>
+  );
 }
